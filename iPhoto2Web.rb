@@ -49,7 +49,22 @@ main_f = File.join(options[:path], options[:name], 'iPhotoMain.db')
 
 if File.exists?(main_f)
 	main_db = SQLite3::Database.new(main_f)
-	columns, *rows = main_db.execute2("select e.primaryKey as event, pi.primaryKey as photoInfo, datetime(pi.photoDate + julianday('2000-01-01 00:00:00')) as photoDate, fim.primaryKey as fileImage, fim.imageType as imageType, fi.primaryKey as fileInfo, fi.format as format, fi.relativePath as relPath from SqEvent as e join SqPhotoInfo as pi on pi.event = e.primaryKey join SqFileImage as fim on fim.photoKey = pi.primaryKey join SqFileInfo as fi on fim.sqFileInfo = fi.primaryKey")
+	columns, *rows = main_db.execute2("SELECT"\
+									  " e.primaryKey AS event,"\
+									  " DATETIME(e.rollDate + JULIANDAY('2000-01-01 00:00:00')) AS eventDate,"\
+									  " pi.primaryKey AS fotoInfo,"\
+									  " pi.archiveFilename AS fotoName,"\
+									  " DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS fotoDate,"\
+									  " fim.primaryKey AS fileImage,"\
+									  " fi.primaryKey AS fileInfo,"\
+									  " fim.imageType AS imageType,"\
+									  " fi.format AS format,"\
+									  " fi.relativePath AS relPath"\
+									  " FROM"\
+									  " SqEvent AS e"\
+									  " JOIN SqPhotoInfo AS pi ON pi.event = e.primaryKey"\
+									  " JOIN SqFileImage AS fim ON fim.photoKey = pi.primaryKey"\
+									  " JOIN SqFileInfo AS fi ON fim.sqFileInfo = fi.primaryKey")
 	puts columns.join '|'
 	rows.each do |row|
 		puts row.join '|'
