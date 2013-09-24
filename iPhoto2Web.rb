@@ -12,30 +12,39 @@
 require 'sqlite3'
 require "optparse"
 
-# set :path and :name to the default path to and name of the iPhoto Library
-options = {:path => File.join(Dir.home, 'Pictures'), :name => 'iPhoto Library'}
+# set :path to the default path to the iPhoto Library
+options = {:path => File.join(Dir.home, 'Pictures'), :by_event => true}
 
 OptionParser.new do |opts|
 
 	prog_name = File.basename($PROGRAM_NAME)
 
-	opts.banner = "#{prog_name} opens and queries the iPhoto Library.\n\nUsage: #{prog_name} [options]"
+	opts.banner = "#{prog_name} opens and queries the iPhoto Library.\n\n"\
+		"Usage: #{prog_name} [options] [file]"
 
-	opts.on( "-v", "--[no-]verbose", "Run verbosely.") do |v|
-		options[:verbose] = v
+	opts.on( "-a", "--album [AlbumName]", String,
+	         "Create layout from user albums or a named album") do |name|
+		options[:by_album] = true
+		options[:by_event] = false
+		options[:album_name] = name || ''
 	end
 
 	opts.on("-p", "--path PATH", "Path to iPhoto Library being opened, default: #{options[:path]}.") do |p|
 		options[:path] = p
 	end
 
-	opts.on("-n", "--name NAME", "Name of iPhoto Libray being opened, default: #{options[:name]}.") do |n|
-		options[:name] = n
+	opts.on( "-v", "--[no-]verbose", "Run verbosely.") do |v|
+		options[:verbose] = v
 	end
 end.parse!
 
-main_f = File.join(options[:path], options[:name], 'iPhotoMain.db')
+p options
 
+lib_name = ARGV[0] || 'iPhoto Library'	# Set lib_name to default name of iPhoto Library
+
+main_f = File.join(options[:path], lib_name, 'iPhotoMain.db')
+
+abort("#{main_f} doesn't exist.") unless File.exists?(main_f)
 #------======-------#
 # sqFileInfo.imageType definitions
 # type=8: the original image if it is a raw data image
@@ -47,26 +56,27 @@ main_f = File.join(options[:path], options[:name], 'iPhotoMain.db')
 # select primaryKey, datetime(photoDate + julianday('2000-01-01 00:00:00')) as photoDate, archiveFilename from SqPhotoInfo order by archiveFilename desc;
 #------======-------#
 
-if File.exists?(main_f)
-	main_db = SQLite3::Database.new(main_f)
-	columns, *rows = main_db.execute2("SELECT"\
-									  " e.primaryKey AS event,"\
-									  " DATETIME(e.rollDate + JULIANDAY('2000-01-01 00:00:00')) AS eventDate,"\
-									  " pi.primaryKey AS fotoInfo,"\
-									  " pi.archiveFilename AS fotoName,"\
-									  " DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS fotoDate,"\
-									  " fim.primaryKey AS fileImage,"\
-									  " fi.primaryKey AS fileInfo,"\
-									  " fim.imageType AS imageType,"\
-									  " fi.format AS format,"\
-									  " fi.relativePath AS relPath"\
-									  " FROM"\
-									  " SqEvent AS e"\
-									  " JOIN SqPhotoInfo AS pi ON pi.event = e.primaryKey"\
-									  " JOIN SqFileImage AS fim ON fim.photoKey = pi.primaryKey"\
-									  " JOIN SqFileInfo AS fi ON fim.sqFileInfo = fi.primaryKey")
-	puts columns.join '|'
-	rows.each do |row|
-		puts row.join '|'
-	end
+main_db = SQLite3::Database.new(main_f)
+columns, *rows = main_db.execute2("SELECT"\
+								  " e.primaryKey AS event,"\
+								  " e.name AS eventName,"\
+								  " DATETIME(e.rollDate + JULIANDAY('2000-01-01 00:00:00')) AS eventDate,"\
+								  " pi.primaryKey AS fotoInfo,"\
+								  " pi.archiveFilename AS fotoName,"\
+								  " DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS fotoDate,"\
+								  " fim.primaryKey AS fileImage,"\
+								  " fi.primaryKey AS fileInfo,"\
+								  " fim.imageType AS imageType,"\
+								  " fi.format AS format,"\
+								  " fi.relativePath AS relPath"\
+								  " FROM"\
+								  " SqEvent AS e"\
+								  " JOIN SqPhotoInfo AS pi ON pi.event = e.primaryKey"\
+								  " JOIN SqFileImage AS fim ON fim.photoKey = pi.primaryKey"\
+								  " JOIN SqFileInfo AS fi ON fim.sqFileInfo = fi.primaryKey"\
+								  " WHERE fim.imageType = 6"\
+								  " ORDER BY eventDate ASC, fotoname ASC, imageType ASC")
+puts columns.join '|'
+rows.each do |row|
+	puts row.join '|'
 end
