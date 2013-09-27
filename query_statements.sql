@@ -1,3 +1,8 @@
+/*
+ * This file serves as a proving ground for testing relationships between the
+ * tables contained in iPhotoMain.db.
+ */
+
 -- keyword relationship
 SELECT pi.archiveFilename AS fotoName,
 kw.title AS keyword
@@ -23,4 +28,4 @@ JOIN SqFileInfo AS fi ON fim.sqFileInfo = fi.primaryKey
 WHERE fim.imageType = 6
 ORDER BY eventDate ASC, fotoname ASC, imageType ASC
 
--- dbext:type=SQLITE:dbname='/Users/me/Pictures/Tati\'s\ iPhoto\ Library/iPhotoMain.db'
+-- dbext:profile=tati
