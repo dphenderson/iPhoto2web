@@ -8,6 +8,9 @@
 # 	http://punctuatednoise.wordpress.com/2011/06/08/hacking-mac-iphoto-sql-database/
 # 	http://punctuatednoise.wordpress.com/2011/06/19/hacking-mac-iphoto-structure-revisit/
 # — as well as independent investigation of the database.
+#
+# iPhoto is a registered trademark of Apple Inc.
+#
 
 require 'sqlite3'
 require "optparse"
