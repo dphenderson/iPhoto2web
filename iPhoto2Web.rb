@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# This program made possible with help from prior research on the iPhoto(R) ‘09 version 8.1.2 database from the following web pages —
+# This program made possible with help from prior research on the iPhoto(R) ‘09 version 8.1.2 (424) database from the following web pages —
 # 	http://gskluzacek.tumblr.com/post/9111450792/more-on-iphotomain-db-iphotoaux-db-date-formats
 # 	http://gskluzacek.tumblr.com/post/9080035545/iphotomain-db-table-relationships
 # 	http://gskluzacek.tumblr.com/post/243137142/finding-the-original-photo-file-in-the-iphoto-library
