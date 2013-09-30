@@ -18,6 +18,8 @@
  */
 
 -- photo relationship
+-- information about individual photos come from 3 tables:
+-- SqPhotoInfo, SqFileImage, and SqFileInfo
 SELECT pi.primaryKey AS photoID,
 pi.archiveFilename AS photoName,
 DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS photoDate,
@@ -28,12 +30,36 @@ JOIN SqFileImage AS fim ON fim.photoKey = pi.primaryKey
 JOIN SqFileInfo AS fi ON fi.primaryKey = fim.sqFileInfo
 ORDER BY photoType;
 
+-- album relationship
+SELECT al.name AS albumName,
+al.className AS albumType,
+al.repAlbumKeyForLoading AS albumUID,
+pi.primaryKey AS photoID,
+pi.archiveFilename AS photoName,
+DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS photoDate,
+fim.imageType AS photoType,
+fi.relativePath AS photoPath
+FROM AlbumsPhotosJoin AS apj
+JOIN SqAlbum AS al ON al.primaryKey = apj.sqAlbum
+JOIN SqPhotoInfo AS pi on pi.primaryKey = apj.sqPhotoInfo
+JOIN SqFileImage AS fim ON fim.photoKey = pi.primaryKey
+JOIN SqFileInfo AS fi ON fi.primaryKey = fim.sqFileInfo
+WHERE albumType = 'Album'								-- user generated albums
+AND albumUID < 999000									-- Apple generated albums are >= 999000
+ORDER BY albumName, apj.photosOrder;
+
 -- keyword relationship
-SELECT pi.archiveFilename AS fotoName,
+SELECT pi.primaryKey AS photoID,
+pi.archiveFilename AS photoName,
+DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS photoDate,
+fim.imageType AS photoType,
+fi.relativePath AS photoPath,
 kw.title AS keyword
 FROM KeywordsPhotosJoin AS kpj
-JOIN SqPhotoInfo AS pi ON pi.primaryKey=kpj.sqPhotoInfo
-JOIN SqKeyword AS kw ON kw.primaryKey=kpj.sqKeyword;
+JOIN SqPhotoInfo AS pi ON pi.primaryKey = kpj.sqPhotoInfo
+JOIN SqKeyword AS kw ON kw.primaryKey = kpj.sqKeyword
+JOIN SqFileImage AS fim ON fim.photoKey = pi.primaryKey
+JOIN SqFileInfo AS fi ON fi.primaryKey = fim.sqFileInfo;
 
 -- event relationship
 SELECT e.primaryKey AS event,
