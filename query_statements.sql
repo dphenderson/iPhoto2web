@@ -63,11 +63,14 @@ JOIN SqFileInfo AS fi ON fi.primaryKey = fim.sqFileInfo;
 
 -- event relationship
 SELECT e.primaryKey AS event,
-e.name AS eventName,
+e.name AS eventName,													-- Title field in iPhoto
 DATE(e.rollDate + JULIANDAY('2000-01-01 00:00:00')) AS eventDate,
+e.comment AS eventDesc,													-- Description field in iPhoto
 pi.primaryKey AS fotoInfo,
 pi.archiveFilename AS fotoName,
 DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS fotoDate,
+pi.caption AS caption,													-- Title field in iPhoto
+pi.comments AS photoDesc,												-- Description field in iPhoto
 fim.primaryKey AS fileImage,
 fi.primaryKey AS fileInfo,
 fim.imageType AS imageType,
