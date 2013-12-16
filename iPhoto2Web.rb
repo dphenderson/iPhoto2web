@@ -58,23 +58,53 @@ main_f = File.join(options[:path], lib_name, 'iPhotoMain.db')
 
 abort("#{main_f} doesn't exist.") unless File.exists?(main_f)
 #------======-------#
-# sqFileInfo.imageType definitions
+# SqFileImage.imageType definitions
+#
 # type=8: the original image if it is a raw data image
 # type=7: key photo
 # type=6: the image itself when you double clock on the thumbnail
 # type=5: thumbnail
 # type=1: the original if it is modified
 #
-# select primaryKey, datetime(photoDate + julianday('2000-01-01 00:00:00')) as photoDate, archiveFilename from SqPhotoInfo order by archiveFilename desc;
+# SqFileInfo.format definitions
+#
+#  862351904	=>	3FR
+#  943870035	=>	psd
+# 1195984486	=>	gif
+# 1246769696	=>	jp2
+# 1246774599	=>	jpg
+# 1346978644	=>	pict
+# 1347307366	=>	png
+# 1414088262	=>	tiff
+# 1634891552	=>	ARW
+# 1668428320	=>	CR2
+# 1668445984	=>	CRW
+# 1684238880	=>	DCR
+# 1684956960	=>	DNG
+# 1701996064	=>	ERF
+# 1836020512	=>	MOS
+# 1836218144	=>	MRW
+# 1852139040	=>	NEF
+# 1852995360	=>	NRW
+# 1869768224	=>	ORF
+# 1885693472	=>	PEF
+# 1918985760	=>	RAF
+# 1918990112	=>	RAW
+# 1920414240	=>	RW2
+# 1936863776	=>	SR2
+#
+# Dates for SqEvent and SqPhotoInfo are stored as the real number difference
+# between the photo's date and midnight 1 January 2000. The dates can be
+# retrieved using:
+# DATETIME(stored_number + julianday('2000-01-01 00:00:00'))
+#
 #------======-------#
-
-# " DATETIME(e.rollDate + JULIANDAY('2000-01-01 00:00:00')) AS eventDate,"\
 
 main_db = SQLite3::Database.new(main_f)
 columns, *rows = main_db.execute2("SELECT"\
 								  " e.primaryKey AS event,"\
 								  " e.name AS eventName,"\
-								  " e.rollDate AS eventDate,"\
+								  " DATETIME(e.rollDate + JULIANDAY('2000-01-01 00:00:00')) AS eventDate,"\
 								  " pi.primaryKey AS fotoInfo,"\
 								  " pi.archiveFilename AS fotoName,"\
 								  " DATETIME(pi.photoDate + JULIANDAY('2000-01-01 00:00:00')) AS fotoDate,"\
@@ -88,8 +118,8 @@ columns, *rows = main_db.execute2("SELECT"\
 								  " JOIN SqPhotoInfo AS pi ON pi.event = e.primaryKey"\
 								  " JOIN SqFileImage AS fim ON fim.photoKey = pi.primaryKey"\
 								  " JOIN SqFileInfo AS fi ON fim.sqFileInfo = fi.primaryKey"\
-								  " WHERE fim.imageType = 6"\
-								  " ORDER BY eventDate ASC, fotoname ASC, imageType ASC")
+								  " WHERE fim.imageType = 8 OR fim.imageType = 6"\
+								  " ORDER BY imageType ASC, fotoname ASC")
 puts columns.join '|'
 rows.each do |row|
 	puts row.join '|'
